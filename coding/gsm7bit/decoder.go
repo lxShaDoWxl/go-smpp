@@ -6,7 +6,9 @@ import (
 	"golang.org/x/text/transform"
 )
 
-type gsm7Decoder struct{}
+type gsm7Decoder struct {
+	packed bool
+}
 
 func (d gsm7Decoder) Reset() { /* no needed */ }
 
@@ -15,7 +17,7 @@ func (d gsm7Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 		return
 	}
 	var buf bytes.Buffer
-	septets := unpackSeptets(src)
+	septets := unpackSeptets(src, d.packed)
 	err = ErrInvalidByte
 	for i, septet := 0, byte(0); i < len(septets); i++ {
 		septet = septets[i]
@@ -48,7 +50,10 @@ func (d gsm7Decoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 	return
 }
 
-func unpackSeptets(septets []byte) []byte {
+func unpackSeptets(septets []byte, packed bool) []byte {
+	if !packed {
+		return septets
+	}
 	var septet, bit byte = 0, 0
 	var buf bytes.Buffer
 	buf.Grow(len(septets))

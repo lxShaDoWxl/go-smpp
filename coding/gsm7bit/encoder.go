@@ -6,7 +6,9 @@ import (
 	"golang.org/x/text/transform"
 )
 
-type gsm7Encoder struct{}
+type gsm7Encoder struct {
+	packed bool
+}
 
 func (e gsm7Encoder) Reset() { /* no needed */ }
 
@@ -18,11 +20,21 @@ func (e gsm7Encoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, err
 	if err != nil {
 		return
 	}
-	nDst = blocks(len(septets) * 7)
+
+	if e.packed {
+		nDst = blocks(len(septets) * 7)
+	} else {
+		nDst = len(septets)
+	}
+
 	if len(dst) < nDst {
 		nDst = 0
 		err = transform.ErrShortDst
 		return
+	}
+	if !e.packed {
+		copy(dst, septets)
+		return nDst, nSrc, nil
 	}
 	packSeptets(dst, septets)
 	return

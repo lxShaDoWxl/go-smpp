@@ -6,8 +6,12 @@ import (
 )
 
 var Packed = gsm7Encoding{
-	encoder: new(gsm7Encoder),
-	decoder: new(gsm7Decoder),
+	encoder: &gsm7Encoder{packed: true},
+	decoder: &gsm7Decoder{packed: true},
+}
+var UnPacked = gsm7Encoding{
+	encoder: &gsm7Encoder{packed: false},
+	decoder: &gsm7Decoder{packed: false},
 }
 
 type gsm7Encoding struct{ encoder, decoder transform.Transformer }
